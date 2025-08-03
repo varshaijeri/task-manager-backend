@@ -35,3 +35,4 @@ This is the **RESTful API** backend for the Task Manager application, built usin
    ```bash
    git clone [https://github.com/your-username/task-manager-backend.git]
    cd task-manager-backend
+2. **Swagger: https://taskmanager-hidden-sky-719.fly.dev/swagger-ui/index.html**
