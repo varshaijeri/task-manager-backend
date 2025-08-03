@@ -3,6 +3,7 @@ package com.varsha.taskmanager.service;
 import com.varsha.taskmanager.entity.Task;
 import com.varsha.taskmanager.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,9 +26,15 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    public Task updateTask(Long id, Task task) {
-        task.setId(id);
-        return taskRepository.save(task);
+    public ResponseEntity<Task> updateTask(Long id, Task taskData) {
+        return taskRepository.findById(id).map(task -> {
+            task.setTitle(taskData.getTitle());
+            task.setDescription(taskData.getDescription());
+            task.setDueDate(taskData.getDueDate());
+            task.setTag(taskData.getTag());
+            Task updatedTask = taskRepository.save(task);
+            return ResponseEntity.ok(updatedTask);
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     public void deleteTask(Long id) {
