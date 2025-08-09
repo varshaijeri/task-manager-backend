@@ -1,6 +1,7 @@
 package com.varsha.taskmanager.service;
 
 import com.varsha.taskmanager.entity.Task;
+import com.varsha.taskmanager.model.TaskStatus;
 import com.varsha.taskmanager.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +36,14 @@ public class TaskService {
             Task updatedTask = taskRepository.save(task);
             return ResponseEntity.ok(updatedTask);
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    public Task updateTaskStatus(Long taskId, TaskStatus status) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        task.setStatus(status);
+        return taskRepository.save(task);
     }
 
     public void deleteTask(Long id) {

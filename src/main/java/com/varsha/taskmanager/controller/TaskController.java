@@ -1,6 +1,7 @@
 package com.varsha.taskmanager.controller;
 
 import com.varsha.taskmanager.entity.Task;
+import com.varsha.taskmanager.model.TaskStatus;
 import com.varsha.taskmanager.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -37,6 +38,16 @@ public class TaskController {
     public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task task) {
         return taskService.updateTask(id, task);
     }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<Task> updateTaskStatus(
+            @PathVariable Long id,
+            @RequestParam TaskStatus status) {
+
+        Task updatedTask = taskService.updateTaskStatus(id, status);
+        return ResponseEntity.ok(updatedTask);
+    }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTask(@PathVariable Long id) {

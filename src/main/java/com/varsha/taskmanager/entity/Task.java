@@ -1,10 +1,8 @@
 package com.varsha.taskmanager.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import com.varsha.taskmanager.model.TaskStatus;
 
 import java.time.LocalDate;
 
@@ -19,6 +17,17 @@ public class Task {
     private String tag;
     @NotNull(message = "Need to set a due date")
     private LocalDate dueDate;
+
+    public TaskStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TaskStatus status) {
+        this.status = status;
+    }
+
+    @Enumerated(EnumType.STRING)
+    private TaskStatus status; // NEW FIELD
 
     public Long getId() {
         return id;
