@@ -20,8 +20,8 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .servers(List.of(
-                        new Server().url("https://taskmanager-hidden-sky-719.fly.dev/").description("Production Server"),
-                        new Server().url("/").description("Localhost")
+                        new Server().url("https://taskmanager-hidden-sky-719.fly.dev/").description("Production Server")
+//                        new Server().url("/").description("Localhost")
                 ))
                 .info(new Info()
                         .title("Task Manager API")
