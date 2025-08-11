@@ -40,7 +40,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOriginPatterns(Arrays.asList("http://localhost:*", "https://*.vercel.app","https://*.fly.dev")); // Frontend URL
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        config.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type", "X-Requested-With"));
+        config.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
         config.setExposedHeaders(Arrays.asList("Authorization", "X-Custom-Header"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
@@ -52,11 +52,14 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter) throws Exception {
-        return http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        return http.requiresChannel(channel ->
+                        channel.requestMatchers(r -> r.getHeader("X-Forwarded-Proto") != null)
+                                .requiresSecure())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html","/webjars/**", "/swagger-resources/**").permitAll().anyRequest().authenticated())
+                        .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html","/webjars/**", "/swagger-resources/**", "/configuration/**").permitAll().anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterAt(
                         jwtFilter,
@@ -68,8 +71,8 @@ public class SecurityConfig {
                             res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
                         })
                 )
-                .httpBasic(httpBasic -> httpBasic.disable())
-                .formLogin(form -> form.disable())
+//                .httpBasic(httpBasic -> httpBasic.disable())
+//                .formLogin(form -> form.disable())
                 .build();
     }
 

@@ -1,6 +1,6 @@
 window.onload = function() {
-    const ui = SwaggerUIBundle({
-        url: "/v3/api-docs",
+    window.ui = SwaggerUIBundle({
+        url: "https://taskmanager-hidden-sky-719.fly.dev/v3/api-docs",
         dom_id: '#swagger-ui',
         presets: [
             SwaggerUIBundle.presets.apis,
@@ -10,21 +10,17 @@ window.onload = function() {
             SwaggerUIBundle.plugins.DownloadUrl
         ],
         layout: "StandaloneLayout",
+        deepLinking: true,
+        validatorUrl: null,
         requestInterceptor: (req) => {
+            if (req.url.startsWith('/')) {
+                req.url = 'https://taskmanager-hidden-sky-719.fly.dev' + req.url;
+            }
             const token = localStorage.getItem('swagger_token');
             if (token) {
                 req.headers.Authorization = 'Bearer ' + token;
             }
             return req;
-        },
-        responseInterceptor: (res) => {
-            if (res.url.endsWith('/login') && res.ok) {
-                const token = res.obj.token; // Adjust based on your response structure
-                localStorage.setItem('swagger_token', token);
-            }
-            return res;
         }
     });
-
-    window.ui = ui;
 };

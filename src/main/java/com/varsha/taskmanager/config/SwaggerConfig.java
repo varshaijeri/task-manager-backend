@@ -1,5 +1,6 @@
 package com.varsha.taskmanager.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -19,18 +20,21 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .servers(List.of(
-                        new Server().url("https://taskmanager-hidden-sky-719.fly.dev/")
+                        new Server().url("https://taskmanager-hidden-sky-719.fly.dev/").description("Production Server"),
+                        new Server().url("/").description("Localhost")
                 ))
                 .info(new Info()
                         .title("Task Manager API")
                         .version("1.0")
                         .description("API documentation with JWT authentication"))
-                .schemaRequirement("bearerAuth", new SecurityScheme()
-                        .name("Authorization")
-                        .type(SecurityScheme.Type.HTTP)
-                        .scheme("bearer")
-                        .bearerFormat("JWT"))
-                .addSecurityItem(new SecurityRequirement()
-                        .addList("bearerAuth"));
+                .externalDocs(new ExternalDocumentation()
+                        .description("Documentation")
+                        .url("https://taskmanager-hidden-sky-719.fly.dev/swagger-ui.html"))
+                .components(new Components()
+                        .addSecuritySchemes("bearerAuth", new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")))
+                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"));
     }
 }
