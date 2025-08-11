@@ -75,12 +75,4 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .build();
     }
-
-    @Bean
-    public FilterRegistrationBean<ForwardedHeaderFilter> forwardedHeaderFilter() {
-        FilterRegistrationBean<ForwardedHeaderFilter> bean = new FilterRegistrationBean<>();
-        bean.setFilter(new ForwardedHeaderFilter());
-        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        return bean;
-    }
 }
