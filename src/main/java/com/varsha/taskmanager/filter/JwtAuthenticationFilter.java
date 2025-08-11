@@ -5,17 +5,22 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService; // 👈 Inject your JwtService
+    private final JwtService jwtService; // Inject your JwtService
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     public JwtAuthenticationFilter(JwtService jwtService) {
         this.jwtService = jwtService;
@@ -27,18 +32,40 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        String token = extractToken(request);
+        // Skip for permitted endpoints
+        if (request.getRequestURI().startsWith("/api/auth") ||
+                request.getRequestURI().startsWith("/swagger")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-        if (token != null && validateToken(token)) { // 👈 Use JwtService
-            // Set authentication in SecurityContext
-            String username = jwtService.extractUsername(token); // 👈 Call JwtService
-            UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(
-                            username,
-                            null,
-                            new ArrayList<>() // Add roles if needed
-                    );
+        try {
+            String token = extractToken(request);
+
+            if (token == null) {
+                logger.warn("JWT required but not found for {}", request.getRequestURI());
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authorization header required");
+                return; // Explicitly return instead of continuing chain
+            }
+
+            if (!jwtService.validateToken(token)) {
+                logger.warn("Invalid JWT token");
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+                return;
+            }
+
+            String username = jwtService.extractUsername(token);
+            var auth = new UsernamePasswordAuthenticationToken(
+                    username, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+
             SecurityContextHolder.getContext().setAuthentication(auth);
+            logger.info("Authenticated user: {}", username);
+
+        } catch (Exception e) {
+            logger.error("Authentication failed", e);
+            SecurityContextHolder.clearContext();
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication failed");
+            return;
         }
 
         filterChain.doFilter(request, response);
