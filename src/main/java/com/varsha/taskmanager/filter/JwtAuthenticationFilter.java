@@ -33,8 +33,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
         // Skip for permitted endpoints
-        if (request.getRequestURI().startsWith("/api/auth") ||
-                request.getRequestURI().startsWith("/swagger")) {
+        if (shouldNotFilter(request)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // Skip for permitted endpoints
+        if (request.getRequestURI().startsWith("/swagger") ||
+                request.getRequestURI().startsWith("/v3/api-docs") ||
+                request.getRequestURI().startsWith("/api/auth")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -43,6 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = extractToken(request);
 
             if (token == null) {
+                response.setHeader("WWW-Authenticate", "Bearer");
                 logger.warn("JWT required but not found for {}", request.getRequestURI());
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authorization header required");
                 return; // Explicitly return instead of continuing chain
@@ -81,7 +89,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private boolean validateToken(String token) {
         try {
-            jwtService.extractUsername(token); // 👈 Validates token implicitly
+            jwtService.extractUsername(token); // Validates token implicitly
             return true;
         } catch (Exception e) {
             return false;
