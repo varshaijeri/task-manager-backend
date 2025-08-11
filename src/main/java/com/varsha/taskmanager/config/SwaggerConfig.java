@@ -1,5 +1,6 @@
 package com.varsha.taskmanager.config;
 
+import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
@@ -20,6 +21,9 @@ public class SwaggerConfig {
                 .servers(List.of(
                         new Server().url("https://taskmanager-hidden-sky-719.fly.dev/")
                 ))
+                .externalDocs(new ExternalDocumentation()
+                        .description("API Documentation")
+                        .url("https://taskmanager-hidden-sky-719.fly.dev/swagger-ui.html"))
                 .info(new Info()
                         .title("Task Manager API")
                         .version("1.0")
