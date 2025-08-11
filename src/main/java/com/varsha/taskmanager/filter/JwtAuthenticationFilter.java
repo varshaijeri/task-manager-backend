@@ -32,47 +32,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        // Skip for permitted endpoints
-        if (shouldNotFilter(request)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        // Skip for permitted endpoints
-        if (request.getRequestURI().startsWith("/swagger") ||
-                request.getRequestURI().startsWith("/v3/api-docs") ||
-                request.getRequestURI().startsWith("/api/auth")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        try {
-            String token = extractToken(request);
-
-            if (token == null) {
-                response.setHeader("WWW-Authenticate", "Bearer");
-                logger.warn("JWT required but not found for {}", request.getRequestURI());
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authorization header required");
-                return; // Explicitly return instead of continuing chain
-            }
-
-            if (!jwtService.validateToken(token)) {
-                logger.warn("Invalid JWT token");
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
-                return;
-            }
-
-            String username = jwtService.extractUsername(token);
-            var auth = new UsernamePasswordAuthenticationToken(
-                    username, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
-
-            SecurityContextHolder.getContext().setAuthentication(auth);
-            logger.info("Authenticated user: {}", username);
-
-        } catch (Exception e) {
-            logger.error("Authentication failed", e);
-            SecurityContextHolder.clearContext();
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication failed");
+        if (!request.isSecure() && "http".equals(request.getScheme()) &&
+                "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"))) {
+            response.sendRedirect("https://" + request.getServerName() + request.getRequestURI());
             return;
         }
 
