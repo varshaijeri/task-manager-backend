@@ -18,11 +18,15 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
+        Server productionServer = new Server()
+                .url("https://taskmanager-hidden-sky-719.fly.dev")
+                .description("Production Server (HTTPS only)");
+//        .servers(List.of(
+//                new Server().url("https://taskmanager-hidden-sky-719.fly.dev/").description("Production Server"),
+//                new Server().url("http://localhost:8080").description("Localhost")
+//        ))
         return new OpenAPI()
-                .servers(List.of(
-                        new Server().url("https://taskmanager-hidden-sky-719.fly.dev/").description("Production Server"),
-                        new Server().url("http://localhost:8080").description("Localhost")
-                ))
+                .servers(List.of(productionServer))
                 .info(new Info()
                         .title("Task Manager API")
                         .version("1.0")
