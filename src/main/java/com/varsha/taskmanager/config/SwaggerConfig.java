@@ -20,11 +20,23 @@ public class SwaggerConfig {
     @Value("${app.base-url:}")
     private String baseUrl;
 
+    @Value("${spring.profiles.active:}")
+    private String activeProfile;
+
+    private boolean isProduction() {
+        return activeProfile.contains("prod") ||
+                !baseUrl.isEmpty() && baseUrl.startsWith("https");
+    }
+
     @Bean
     public OpenAPI customOpenAPI() {
+        // Determine server URL based on environment
+        String serverUrl = isProduction() ?
+                baseUrl : // useful HTTPS URL in production
+                "/";      // Use relative path in development
         Server server = new Server()
-                .url(baseUrl.isEmpty() ? "/" : baseUrl) // default to relative for local
-                .description("API Server");
+                .url(serverUrl)
+                .description(isProduction() ? "Production Server" : "Development Server");
         return new OpenAPI()
                 .servers(List.of(server))
                 .info(new Info()
