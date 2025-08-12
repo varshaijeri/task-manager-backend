@@ -21,8 +21,6 @@ import org.springframework.web.filter.RequestContextFilter;
 
 import java.util.Arrays;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -56,7 +54,7 @@ public class SecurityConfig {
                         .requestMatchers(r -> r.getHeader("X-Forwarded-Proto") != null)
                         .requiresSecure()
                 )
-                .cors(withDefaults())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

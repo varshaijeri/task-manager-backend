@@ -30,22 +30,23 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-        // Determine server URL based on environment
-        String serverUrl = isProduction() ?
-                baseUrl : // useful HTTPS URL in production
-                "/";      // Use relative path in development
-        Server server = new Server()
-                .url(serverUrl)
-                .description(isProduction() ? "Production Server" : "Development Server");
         return new OpenAPI()
-                .servers(List.of(server))
+                .servers(List.of(
+                        new Server()
+                                .url(isProduction() ? baseUrl : "http://localhost:8080")
+                                .description(isProduction() ? "Production Server" : "Development Server")
+                ))
                 .info(new Info()
                         .title("Task Manager API")
                         .version("1.0")
                         .description("API documentation with JWT authentication"))
                 .externalDocs(new ExternalDocumentation()
                         .description("Documentation")
-                        .url("https://taskmanager-hidden-sky-719.fly.dev/swagger-ui.html"))
+                        .url(isProduction() ?
+                                "https://taskmanager-hidden-sky-719.fly.dev/swagger-ui.html" :
+                                "http://localhost:8080/swagger-ui.html"
+                        )
+                )
                 .components(new Components()
                         .addSecuritySchemes("bearerAuth", new SecurityScheme()
                                 .type(SecurityScheme.Type.HTTP)

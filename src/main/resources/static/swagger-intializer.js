@@ -1,6 +1,11 @@
 window.onload = function() {
+    const isProduction = window.location.host.includes('fly.dev');
+    const apiUrl = isProduction ?
+        'https://taskmanager-hidden-sky-719.fly.dev/v3/api-docs' :
+        'http://localhost:8080/v3/api-docs';
+
     window.ui = SwaggerUIBundle({
-        url: "https://taskmanager-hidden-sky-719.fly.dev/v3/api-docs",
+        url: apiUrl,
         dom_id: '#swagger-ui',
         presets: [
             SwaggerUIBundle.presets.apis,
@@ -13,12 +18,8 @@ window.onload = function() {
         deepLinking: true,
         validatorUrl: null,
         requestInterceptor: (req) => {
-            if (req.url.startsWith('/')) {
+            if (isProduction && req.url.startsWith('/')) {
                 req.url = 'https://taskmanager-hidden-sky-719.fly.dev' + req.url;
-            }
-            const token = localStorage.getItem('swagger_token');
-            if (token) {
-                req.headers.Authorization = 'Bearer ' + token;
             }
             return req;
         }
