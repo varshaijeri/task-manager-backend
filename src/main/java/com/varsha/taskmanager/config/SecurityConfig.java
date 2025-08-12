@@ -1,5 +1,6 @@
 package com.varsha.taskmanager.config;
 
+import com.varsha.taskmanager.filter.HttpsEnforcerFilter;
 import com.varsha.taskmanager.filter.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -52,7 +53,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .requiresChannel(channel -> channel.anyRequest().requiresSecure())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -62,10 +63,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html","/webjars/**", "/swagger-resources/**", "/configuration/**").permitAll().anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(
-                        jwtFilter,
+                        new HttpsEnforcerFilter(),
                         UsernamePasswordAuthenticationFilter.class
                 )
-                .addFilterBefore(new RequestContextFilter(), JwtAuthenticationFilter.class)
+                .addFilterBefore(new RequestContextFilter(), HttpsEnforcerFilter.class)
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((req, res, ex) -> {
                             logger.error("Authentication error: {}", ex.getMessage());
