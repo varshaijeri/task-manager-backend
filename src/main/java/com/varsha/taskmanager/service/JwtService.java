@@ -1,6 +1,6 @@
 package com.varsha.taskmanager.service;
 
-import com.varsha.taskmanager.filter.JwtAuthenticationFilter;
+import com.varsha.taskmanager.filter.HttpsEnforcerFilter;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -13,7 +13,7 @@ import java.util.Date;
 @Service
 public class JwtService {
     private static final String JWT_SECRET = "task-manager-secret-jwt-my-app-please-work-for-me";
-    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(HttpsEnforcerFilter.class);
 
     public String generateToken(String username) {
         return Jwts.builder()
