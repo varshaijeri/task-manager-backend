@@ -23,22 +23,14 @@ public class HttpsEnforcerFilter implements Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
         String proto = httpRequest.getHeader("x-forwarded-proto");
+        String requestUrl = httpRequest.getRequestURL().toString();
 
-        // Skip for Swagger endpoints to avoid redirect loops
-        if (httpRequest.getRequestURI().startsWith("/swagger-ui") ||
-                httpRequest.getRequestURI().startsWith("/v3/api-docs")) {
-            chain.doFilter(request, response);
-            return;
-        }
-
-        // Force HTTPS redirect in production
-        if (!baseUrl.isEmpty() && proto != null && !proto.equalsIgnoreCase("https")) {
+        if (baseUrl != null && !baseUrl.isEmpty() && proto != null && !proto.equalsIgnoreCase("https")) {
             String httpsUrl = baseUrl + httpRequest.getRequestURI();
             httpResponse.sendRedirect(httpsUrl);
             return;
         }
 
         chain.doFilter(request, response);
-
     }
 }

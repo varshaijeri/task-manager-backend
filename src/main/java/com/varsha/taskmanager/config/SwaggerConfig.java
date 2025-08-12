@@ -30,12 +30,7 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-        return new OpenAPI()
-                .servers(List.of(
-                        new Server()
-                                .url(isProduction() ? baseUrl : "http://localhost:8080")
-                                .description(isProduction() ? "Production Server" : "Development Server")
-                ))
+        OpenAPI openAPI = new OpenAPI()
                 .info(new Info()
                         .title("Task Manager API")
                         .version("1.0")
@@ -43,15 +38,23 @@ public class SwaggerConfig {
                 .externalDocs(new ExternalDocumentation()
                         .description("Documentation")
                         .url(isProduction() ?
-                                "https://taskmanager-hidden-sky-719.fly.dev/swagger-ui.html" :
-                                "http://localhost:8080/swagger-ui.html"
-                        )
-                )
+                                baseUrl + "/swagger-ui.html" :
+                                "http://localhost:8080/swagger-ui.html"))
                 .components(new Components()
                         .addSecuritySchemes("bearerAuth", new SecurityScheme()
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
                                 .bearerFormat("JWT")))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"));
+
+        // Always add both servers to handle all cases
+        openAPI.addServersItem(new Server()
+                .url(baseUrl)
+                .description("Production Server"));
+        openAPI.addServersItem(new Server()
+                .url("http://localhost:8080")
+                .description("Development Server"));
+
+        return openAPI;
     }
 }
