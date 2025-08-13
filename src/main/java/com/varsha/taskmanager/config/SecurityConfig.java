@@ -39,8 +39,10 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of(
-                "https://*.vercel.app"
+        config.setAllowedOriginPatterns(Arrays.asList(
+                "http://localhost:[*]",
+                "https://*.vercel.app",
+                "https://*.fly.dev"
         )); // Frontend URL
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type", "X-Requested-With"));
@@ -67,6 +69,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html","/webjars/**", "/swagger-resources/**", "/configuration/**","/health-check").permitAll().anyRequest().authenticated())
                 .addFilterBefore(new FlyProxyHeaderFilter(), ChannelProcessingFilter.class)
+                .addFilterBefore(requestLoggingFilter, FlyProxyHeaderFilter.class)
                 .addFilterBefore( jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((req, res, ex) -> {
