@@ -36,7 +36,7 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(Arrays.asList(
+        config.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
                 "https://task-manager-frontend-five-blush.vercel.app/",
                 "https://taskmanager-hidden-sky-719.fly.dev"
