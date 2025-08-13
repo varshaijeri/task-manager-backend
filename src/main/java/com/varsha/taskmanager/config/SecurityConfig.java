@@ -1,9 +1,11 @@
 package com.varsha.taskmanager.config;
 
 import com.varsha.taskmanager.filter.HttpsEnforcerFilter;
+import com.varsha.taskmanager.filter.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -17,7 +19,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.RequestContextFilter;
 
 import java.util.Arrays;
 
@@ -37,7 +38,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOriginPatterns(Arrays.asList("http://localhost:*", "https://*.vercel.app","https://*.fly.dev")); // Frontend URL
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        config.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
+        config.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type", "X-Requested-With"));
         config.setExposedHeaders(Arrays.asList("Authorization", "X-Custom-Header"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
@@ -48,7 +49,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         return http
                 .requiresChannel(channel -> channel
                         .requestMatchers(r -> r.getHeader("X-Forwarded-Proto") != null)
@@ -58,21 +59,29 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html","/webjars/**", "/swagger-resources/**", "/configuration/**").permitAll().anyRequest().authenticated())
+                        .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html","/webjars/**", "/swagger-resources/**", "/configuration/**","/health-check").permitAll().anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(
-                        new HttpsEnforcerFilter(),
-                        UsernamePasswordAuthenticationFilter.class
-                )
-                .addFilterBefore(new RequestContextFilter(), HttpsEnforcerFilter.class)
+//                .addFilterBefore(
+//                        new HttpsEnforcerFilter(),
+//                        UsernamePasswordAuthenticationFilter.class
+//                )
+                .addFilterBefore( jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((req, res, ex) -> {
-                            logger.error("Authentication error: {}", ex.getMessage());
-                            res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                            String token = req.getHeader("Authorization");
+                            logger.error("Auth Failed - Token: {} | Error: {}", token, ex.getMessage());
+                            res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication Failed: " + ex.getMessage());
                         })
                 )
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .formLogin(form -> form.disable())
                 .build();
+    }
+
+    @Bean
+    public FilterRegistrationBean<HttpsEnforcerFilter> httpsFilterRegistration(HttpsEnforcerFilter filter) {
+        FilterRegistrationBean<HttpsEnforcerFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false); // Disable for local
+        return registration;
     }
 }
