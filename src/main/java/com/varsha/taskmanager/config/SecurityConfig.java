@@ -3,6 +3,7 @@ package com.varsha.taskmanager.config;
 import com.varsha.taskmanager.filter.FlyProxyHeaderFilter;
 import com.varsha.taskmanager.filter.HttpsEnforcerFilter;
 import com.varsha.taskmanager.filter.JwtAuthenticationFilter;
+import com.varsha.taskmanager.filter.RequestLoggingFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +70,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html","/webjars/**", "/swagger-resources/**", "/configuration/**","/health-check").permitAll().anyRequest().authenticated())
                 .addFilterBefore(new FlyProxyHeaderFilter(), ChannelProcessingFilter.class)
-                .addFilterBefore(requestLoggingFilter, FlyProxyHeaderFilter.class)
+                .addFilterBefore(new RequestLoggingFilter(), FlyProxyHeaderFilter.class)
                 .addFilterBefore( jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((req, res, ex) -> {
