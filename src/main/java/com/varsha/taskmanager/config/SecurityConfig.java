@@ -36,11 +36,15 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(Arrays.asList("http://localhost:*", "https://*.vercel.app","https://*.fly.dev")); // Frontend URL
+        config.setAllowedOrigins(Arrays.asList(
+                "http://localhost:3000",
+                "https://task-manager-frontend-five-blush.vercel.app",
+                "https://taskmanager-hidden-sky-719.fly.dev"
+        )); // Frontend URL
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type", "X-Requested-With"));
         config.setExposedHeaders(Arrays.asList("Authorization", "X-Custom-Header"));
-        config.setAllowCredentials(false);
+        config.setAllowCredentials(true);
         config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
