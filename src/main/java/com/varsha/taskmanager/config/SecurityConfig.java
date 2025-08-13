@@ -1,5 +1,6 @@
 package com.varsha.taskmanager.config;
 
+import com.varsha.taskmanager.filter.CorsFilter;
 import com.varsha.taskmanager.filter.HttpsEnforcerFilter;
 import com.varsha.taskmanager.filter.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.SecurityContextPersistenceFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -65,6 +67,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html","/webjars/**", "/swagger-resources/**", "/configuration/**","/health-check").permitAll().anyRequest().authenticated())
+                .addFilterBefore(new CorsFilter(), SecurityContextPersistenceFilter.class)
                 .addFilterBefore( jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((req, res, ex) -> {
